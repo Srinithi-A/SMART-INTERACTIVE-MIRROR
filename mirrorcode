@@ -1,0 +1,106 @@
+#include <WiFiS3.h>
+#include "ArduinoGraphics.h"
+#include "Arduino_LED_Matrix.h"
+
+char ssid[] = "*******";     // 🔹 Replace with your Wi-Fi SSID
+char pass[] = "*****"; // 🔹 Replace with your Wi-Fi password
+WiFiServer server(80);
+
+ArduinoLEDMatrix matrix;
+
+// ---------- Setup ----------
+void setup() {
+  Serial.begin(115200);
+  matrix.begin();
+  matrix.beginDraw();
+  matrix.stroke(0xFFFFFFFF);
+  const char text1[] = "UNO R4 WiFi";
+  matrix.textFont(Font_4x6);
+  matrix.beginText(0, 1, 0xFFFFFF);
+  matrix.println(text1);
+  matrix.endText();
+  matrix.endDraw();
+  delay(2000);
+  Serial.println("Connecting to WiFi...");
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+  Serial.print("Connected! IP Address: ");
+  Serial.println(WiFi.localIP());
+  server.begin();
+  matrix.beginDraw();
+  matrix.stroke(0xFFFFFFFF);
+  matrix.textScrollSpeed(80);
+  const char text2[] = "   SMART MIRROR   ";
+  matrix.textFont(Font_5x7);
+  matrix.beginText(0, 1, 0xFFFFFF);
+  matrix.println(text2);
+  matrix.endText(SCROLL_LEFT);
+  matrix.endDraw();
+}
+// ---------- Loop ----------
+void loop() {
+  WiFiClient client = server.available();
+  if (client) {
+    Serial.println("New client connected");
+    String request = "";
+    while (client.connected()) {
+      if (client.available()) {
+        char c = client.read();
+        request += c;
+        if (c == '\n') {
+          // Send Webpage
+          client.println("HTTP/1.1 200 OK");
+          client.println("Content-type:text/html");
+          client.println("Connection: close");
+          client.println();
+          client.println("<!DOCTYPE html><html>");
+          client.println("<head><title>Smart Mirror</title>");
+          client.println("<meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+          client.println("<style>");
+          client.println("body{background-color:black;color:#00ffff;font-family:Arial;text-align:center;margin:0;}");
+          client.println("h1{margin-top:20px;}");
+          client.println(".time{font-size:40px;margin:20px;}");
+          client.println(".weather{font-size:30px;margin:10px;}");
+          client.println("video{width:80%;max-width:500px;margin-top:30px;border:3px solid #0ff;border-radius:15px;}");
+          client.println("</style></head><body>");
+          client.println("<h1>🪞 Smart Interactive Mirror</h1>");
+          client.println("<div class='time' id='datetime'></div>");
+          client.println("<div class='weather'>Weather: Sunny ☀️ | 28°C</div>");
+          client.println("<video id='camera' autoplay playsinline></video>");
+          client.println("<script>");
+          // Live time
+          client.println("function updateTime(){var now=new Date();document.getElementById('datetime').innerHTML=now.toLocaleString();}");
+          client.println("setInterval(updateTime,1000);updateTime();");
+          // Camera feed
+          client.println("navigator.mediaDevices.getUserMedia({video:true})");
+          client.println(".then(stream=>{document.getElementById('camera').srcObject=stream;})");
+          client.println(".catch(err=>{console.log('Camera error:',err);});");
+          client.println("</script></body></html>");
+          break;
+        }
+      }
+    }
+    delay(1);
+    client.stop();
+    Serial.println("Client disconnected");
+  }
+
+  // --- Scroll LED Message Periodically ---
+  static unsigned long lastScroll = 0;
+  if (millis() - lastScroll > 20000) {  
+    matrix.beginDraw();
+    matrix.stroke(0xFFFFFFFF);
+    matrix.textScrollSpeed(80);
+    const char scrollText[] = "   HAPPY DAY!!!!    ";
+    matrix.textFont(Font_5x7);
+    matrix.beginText(0, 1, 0xFFFFFF);
+    matrix.println(scrollText);
+    matrix.endText(SCROLL_LEFT);
+    matrix.endDraw();
+    lastScroll = millis();
+  }
+}
