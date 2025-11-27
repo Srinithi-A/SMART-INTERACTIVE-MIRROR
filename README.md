@@ -6,6 +6,7 @@ A lightweight IoT smart mirror built using the Arduino UNO R4 WiFi board, Web se
 This project combines embedded programming with web technologies to create an interactive, affordable, and easy-to-use smart mirror experience.
 
 🚀 Features:
+
 •Built-in Web Server: Arduino UNO R4 WiFi hosts a local web page accessible from any device on the same network.
 
 •Real-Time Display: Shows live date and time using JavaScript.
@@ -19,6 +20,7 @@ This project combines embedded programming with web technologies to create an in
 •Responsive UI: Styled using pure HTML and CSS for a clean neon-mirror effect.
 
 🧠 Tech Stack
+
 📌Arduino UNO R4 WiFi
 
 📌WiFiS3 Library – Wi-Fi connectivity
@@ -30,6 +32,7 @@ This project combines embedded programming with web technologies to create an in
 📌Local Camera Streaming – Browser mediaDevices.getUserMedia() API
 
 📸 How It Works
+
 1.The Arduino connects to Wi-Fi and starts a local server on port 80.
 
 2.When accessed through the browser, it serves an HTML page with:
